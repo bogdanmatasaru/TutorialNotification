@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		22BDB3BF23324E2B00DB8F84 /* TutorialNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = 22BDB3BD23324E2B00DB8F84 /* TutorialNotification.m */; };
-		22BDB3C023324E2B00DB8F84 /* TutorialNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = 22BDB3BE23324E2B00DB8F84 /* TutorialNotification.h */; };
+		22BDB3C023324E2B00DB8F84 /* TutorialNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = 22BDB3BE23324E2B00DB8F84 /* TutorialNotification.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		22BDB3C323324E8300DB8F84 /* OpenSans-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 22BDB3C223324E8300DB8F84 /* OpenSans-Semibold.ttf */; };
 /* End PBXBuildFile section */
 
