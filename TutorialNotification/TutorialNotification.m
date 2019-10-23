@@ -54,6 +54,7 @@ static const CGFloat kColorAdjustmentLight = 0.35;
 // optionally built
 @property (nonatomic, strong) UIImageView *iconImageView;
 @property (nonatomic, readwrite) UIView *backgroundView;
+@property (nonatomic, readwrite) UIView *contentView;
 @property (nonatomic, readwrite) UIButton *firstButton;
 @property (nonatomic, readwrite) UIView *firstButtonBackgroundView;
 @property (nonatomic, strong) UIView *swipeHintView;
@@ -83,23 +84,32 @@ static const CGFloat kColorAdjustmentLight = 0.35;
 
     // Now get the 'top'-most object in that window and use its width for the Notification
     UIView *topSubview = [[window subviews] lastObject];
-    CGRect notificationFrame = CGRectMake(0, 0, CGRectGetWidth(topSubview.bounds), kNotificationHeight);
+    CGFloat safeArea = self.superview.safeAreaInsets.top;
+    CGRect notificationFrame = CGRectMake(0, 0, CGRectGetWidth(topSubview.bounds), kNotificationHeight + safeArea);
     
     self = [super initWithFrame:notificationFrame];
     if (self) {
         
         self.scrollEnabled = NO; // default swipe/scrolling to off (in case swipeToDismiss is not enabled by default)
         self.contentSize = CGSizeMake(CGRectGetWidth(self.bounds), 2 * CGRectGetHeight(self.bounds));
-        
+        self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
         self.pagingEnabled = YES;
         self.showsVerticalScrollIndicator = NO;
         self.bounces = NO;
         
         self.delegate = self;
-                
+        
+        [super setBackgroundColor:[UIColor clearColor]]; // set background color of scrollView to clear
+        
         // make background button (always needed, even if no target)
         self.backgroundView = [[UIView alloc] initWithFrame:self.bounds];
         [self addSubview:self.backgroundView];
+        
+        CGRect contentViewFrame = self.bounds;
+        contentViewFrame.origin.y = safeArea;
+        contentViewFrame.size.height = kNotificationHeight;
+        self.contentView = [[UIView alloc]initWithFrame:contentViewFrame];
+        [self.backgroundView addSubview:self.contentView];
         
         self.backgroundView.frame = self.bounds;
         self.backgroundView.tag = TutorialNotificationButtonConfigrationZeroButtons;
@@ -189,8 +199,8 @@ static const CGFloat kColorAdjustmentLight = 0.35;
         static const CGFloat kSwipeHintHeight = 5;
         static const CGFloat kSwipeHintTrailingY = 5;
         
-        self.swipeHintView.frame = CGRectMake(0.5 * (CGRectGetWidth(self.backgroundView.bounds) - kSwipeHintWidth),
-                                              CGRectGetHeight(self.backgroundView.bounds) - kSwipeHintTrailingY - kSwipeHintHeight,
+        self.swipeHintView.frame = CGRectMake(0.5 * (CGRectGetWidth(self.contentView.bounds) - kSwipeHintWidth),
+                                              CGRectGetHeight(self.contentView.bounds) - kSwipeHintTrailingY - kSwipeHintHeight,
                                               kSwipeHintWidth,
                                               kSwipeHintHeight);
         
@@ -268,8 +278,9 @@ static const CGFloat kColorAdjustmentLight = 0.35;
 
 - (void)setBackgroundColor:(UIColor *)backgroundColor
 {
-    [super setBackgroundColor:backgroundColor];
+    // do not actually set the background color of the base view (scrollView)
     self.backgroundView.backgroundColor = backgroundColor;
+    
 }
 
 - (void)setTitle:(NSString *)title
@@ -278,7 +289,7 @@ static const CGFloat kColorAdjustmentLight = 0.35;
     
     if (!self.titleLabel) {
         self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        [self.backgroundView addSubview:self.titleLabel];
+        [self.contentView addSubview:self.titleLabel];
         
         self.titleLabel.backgroundColor = [UIColor clearColor];
         self.titleLabel.font = [UIFont fontWithName:@"OpenSans-Semibold" size:14];
@@ -296,7 +307,7 @@ static const CGFloat kColorAdjustmentLight = 0.35;
     
     if (!self.iconImageView) {
         self.iconImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-        [self.backgroundView addSubview:self.iconImageView];
+        [self.contentView addSubview:self.iconImageView];
     }
     
     self.iconImageView.image = iconImage;
@@ -332,7 +343,7 @@ static const CGFloat kColorAdjustmentLight = 0.35;
         if (!self.swipeHintView)
         {
             self.swipeHintView = [[UIView alloc] initWithFrame:CGRectZero];
-            [self.backgroundView addSubview:self.swipeHintView];
+            [self.contentView addSubview:self.swipeHintView];
         }
     }
 }
@@ -384,18 +395,18 @@ static const CGFloat kColorAdjustmentLight = 0.35;
                                                                                   blue:196/255.0
                                                                                  alpha:1];
                
-                [self.backgroundView addSubview:self.firstButtonBackgroundView];
+                [self.contentView addSubview:self.firstButtonBackgroundView];
                 
                 self.firstButton = [self _newButtonWithTitle:firstButtonTitle withTag:buttonTag];
-                [self.backgroundView addSubview:self.firstButton];
+                [self.contentView addSubview:self.firstButton];
                
-                [self.backgroundView bringSubviewToFront:self.swipeHintView];
+                [self.contentView bringSubviewToFront:self.swipeHintView];
             }
             else
             {
                 [self.firstButton setTitle:firstButtonTitle forState:UIControlStateNormal];
-                [self.backgroundView addSubview:self.firstButtonBackgroundView];
-                [self.backgroundView bringSubviewToFront:self.swipeHintView];
+                [self.contentView addSubview:self.firstButtonBackgroundView];
+                [self.contentView bringSubviewToFront:self.swipeHintView];
             }
             
             break;
@@ -433,7 +444,7 @@ static const CGFloat kColorAdjustmentLight = 0.35;
     
     // Called to display the initiliased notification on screen.
    
-    self.notificationDestroyed = NO; 
+    self.notificationDestroyed = NO;
     self.notificationRevealed = YES;
     
     [self _setupNotificationViews];
@@ -699,7 +710,8 @@ static const CGFloat kColorAdjustmentLight = 0.35;
     CGFloat height = _showActionButton ? kNotificationHeight + 30 : kNotificationHeight;
     self.frame = CGRectMake(0, 0, CGRectGetWidth(superview.bounds), height + topInsets);
     self.contentSize = CGSizeMake(CGRectGetWidth(self.bounds), 2 * CGRectGetHeight(self.bounds));
-    self.backgroundView.frame = CGRectMake(0, topInsets, CGRectGetWidth(superview.bounds), height);
+    self.backgroundView.frame = self.bounds;
+    self.contentView.frame = CGRectMake(0, topInsets, CGRectGetWidth(self.bounds), height);
 }
 
 @end
