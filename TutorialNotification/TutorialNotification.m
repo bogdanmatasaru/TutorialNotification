@@ -96,9 +96,7 @@ static const CGFloat kColorAdjustmentLight = 0.35;
         self.bounces = NO;
         
         self.delegate = self;
-        
-        [super setBackgroundColor:[UIColor clearColor]]; // set background color of scrollView to clear
-        
+                
         // make background button (always needed, even if no target)
         self.backgroundView = [[UIView alloc] initWithFrame:self.bounds];
         [self addSubview:self.backgroundView];
@@ -270,9 +268,8 @@ static const CGFloat kColorAdjustmentLight = 0.35;
 
 - (void)setBackgroundColor:(UIColor *)backgroundColor
 {
-    // do not actually set the background color of the base view (scrollView)
+    [super setBackgroundColor:backgroundColor];
     self.backgroundView.backgroundColor = backgroundColor;
-    
 }
 
 - (void)setTitle:(NSString *)title
@@ -382,7 +379,10 @@ static const CGFloat kColorAdjustmentLight = 0.35;
             if (!self.firstButton)
             {
                 self.firstButtonBackgroundView = [UIView new];
-                self.firstButtonBackgroundView.backgroundColor = [UIColor colorWithRed:82 green:110 blue:196 alpha:1];
+                self.firstButtonBackgroundView.backgroundColor = [UIColor colorWithRed:82/255.0
+                                                                                 green:110/255.0
+                                                                                  blue:196/255.0
+                                                                                 alpha:1];
                
                 [self.backgroundView addSubview:self.firstButtonBackgroundView];
                 
@@ -696,10 +696,10 @@ static const CGFloat kColorAdjustmentLight = 0.35;
     
     UIView *superview = self.superview;
     CGFloat topInsets = self.superview.safeAreaInsets.top;
-    
-    self.frame = CGRectMake(0, topInsets, CGRectGetWidth(superview.bounds), _showActionButton ? kNotificationHeight + 30 : kNotificationHeight);
+    CGFloat height = _showActionButton ? kNotificationHeight + 30 : kNotificationHeight;
+    self.frame = CGRectMake(0, 0, CGRectGetWidth(superview.bounds), height + topInsets);
     self.contentSize = CGSizeMake(CGRectGetWidth(self.bounds), 2 * CGRectGetHeight(self.bounds));
-    self.backgroundView.frame = self.bounds;
+    self.backgroundView.frame = CGRectMake(0, topInsets, CGRectGetWidth(superview.bounds), height);
 }
 
 @end
